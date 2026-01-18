@@ -1,6 +1,8 @@
 package com.cookmate.cookmate_web.domain.global.error;
 
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.context.MessageSource;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.BindingResult;
@@ -9,6 +11,7 @@ import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 
 import java.util.List;
+import java.util.Locale;
 import java.util.stream.Collectors;
 
 /**
@@ -27,7 +30,10 @@ import java.util.stream.Collectors;
 
 @Slf4j
 @RestControllerAdvice
+@RequiredArgsConstructor
 public class GlobalExceptionHandler {
+
+    private final MessageSource messageSource;
 
     /**
      * Valid 어노테이션 유효성 검증 실패 시 호출됨
@@ -50,13 +56,24 @@ public class GlobalExceptionHandler {
     }
 
     /**
-     * 비즈니스 로직 중 발생하는 IllegalStateException 처리 (예: 중복 아이디)
+     * 비즈니스 로직 중 발생하는 CustomException 처리
      */
-    @ExceptionHandler(IllegalStateException.class)
-    protected ResponseEntity<ErrorResponse> handleIllegalStateException(IllegalStateException e) {
-        log.error("handleIllegalStateException", e);
-        ErrorResponse response = ErrorResponse.of(e.getMessage(), HttpStatus.BAD_REQUEST.value());
-        return new ResponseEntity<>(response, HttpStatus.BAD_REQUEST);
+    @ExceptionHandler(CustomException.class)
+    protected ResponseEntity<ErrorResponse> handleCustomException(CustomException e, Locale locale) {
+        log.error("handleCustomException : ", e);
+        ErrorCode errorCode = e.getErrorCode();
+
+        // DB에서 메시지 조회 (전달받은 args를 함께 넘김)
+        String message = messageSource.getMessage(
+                errorCode.getMessageKey(),
+                e.getArgs(),
+                "정의되지 않은 메시지입니다.",
+                locale
+        );
+
+        // 응답 생성
+        ErrorResponse response = ErrorResponse.of(message, errorCode.getStatus());
+        return new ResponseEntity<>(response, HttpStatus.valueOf(errorCode.getStatus()));
     }
 
     /**
