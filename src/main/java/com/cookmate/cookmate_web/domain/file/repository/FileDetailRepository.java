@@ -8,6 +8,7 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 
@@ -59,4 +60,12 @@ public interface FileDetailRepository extends JpaRepository<FileDetail, Long> {
     @Modifying
     @Query("UPDATE FileDetail fileDetail SET fileDetail.delYn = 'Y' WHERE fileDetail.fileGroup.fileGrpSeq = :fileGrpSeq")
     void deleteAllByFileGrpSeq(@Param("fileGrpSeq") Long fileGrpSeq);
+
+    /**
+     * 삭제한지 오래된 파일 조회
+     * @param delYn 삭제 여부
+     * @param standardDt 기준일
+     * @return 삭제한지 오래된 파일 목록
+     */
+    List<FileDetail> findByDelYnAndDelDtBefore(String delYn, LocalDateTime standardDt);
 }

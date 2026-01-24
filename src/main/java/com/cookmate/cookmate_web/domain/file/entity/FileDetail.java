@@ -73,6 +73,9 @@ public class FileDetail {
     @Builder.Default
     private String delYn = "N";
 
+    @Column(name = "del_dt")
+    private LocalDateTime delDt;
+
     // 파일 삭제를 위한 delYn 상태값 변경
     public void deleteFile() {
         this.delYn = "Y";
