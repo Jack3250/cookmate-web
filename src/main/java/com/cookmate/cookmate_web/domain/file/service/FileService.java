@@ -184,8 +184,11 @@ public class FileService {
 
     /**
      * 파일 수정
-     * - 새로 추가된 파일들은 저장
-     * - 삭제된 파일 ID 목록은 삭제 처리
+     * @param fileGrpId 파일 그룹 ID
+     * @param newFiles 새로 추가된 파일 목록
+     * @param deleteFiles 삭제 요청된 파일 목록
+     * @param rgtrKey 등록자 키
+     * @throws IOException 파일 저장 실패 시
      */
     @Transactional
     public void updateFiles(String fileGrpId, List<MultipartFile> newFiles, List<String> deleteFiles, String rgtrKey) throws IOException {
