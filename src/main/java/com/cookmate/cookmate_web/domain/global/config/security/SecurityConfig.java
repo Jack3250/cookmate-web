@@ -38,9 +38,10 @@ public class SecurityConfig {
             .headers(headers -> headers.frameOptions(frame -> frame.disable())) // H2 콘솔 사용 시 필요
             .authorizeHttpRequests(auth -> auth
                 .requestMatchers(
-                        "/users/regist"
+                        "/common/**"    
+                        , "/users/regist"
                         , "/users/login"
-                        , "/common/**"
+                        , "/files/**"
                     ).permitAll() // 가입 및 공통 메시지 허용
                 .anyRequest().authenticated() // 그 외는 인증 필요
             );

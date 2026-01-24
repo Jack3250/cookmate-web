@@ -33,6 +33,10 @@ public enum ErrorCode {
 
     // 서버 오류
     , INTERNAL_SERVER_ERROR(500, "valid.common.server.error")
+
+    // 파일관련
+    , FILE_NOT_ATTACHED(400, "valid.file.required")
+    , FILE_NOT_FOUND(400, "valid.file.not.found")
     ;
 
     private final int status;
