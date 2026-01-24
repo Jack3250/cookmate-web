@@ -104,4 +104,15 @@ public class UserDTO {
                     .build();
         }
     }
+
+    @Getter
+    @NoArgsConstructor
+    @AllArgsConstructor
+    public static class LoginRequest { // 로그인 요청 데이터
+        @NotBlank(message = "{valid.user.id.required}")
+        private String loginId;
+
+        @NotBlank(message = "{valid.user.pswd.required}")
+        private String pswd;
+    }
 }

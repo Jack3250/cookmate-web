@@ -3,9 +3,11 @@ package com.cookmate.cookmate_web.domain.users.service;
 import com.cookmate.cookmate_web.domain.common.util.KeygenUtil;
 import com.cookmate.cookmate_web.domain.global.error.CustomException;
 import com.cookmate.cookmate_web.domain.global.error.ErrorCode;
+import com.cookmate.cookmate_web.domain.users.dto.SessionUser;
 import com.cookmate.cookmate_web.domain.users.dto.UserDTO;
 import com.cookmate.cookmate_web.domain.users.entity.User;
 import com.cookmate.cookmate_web.domain.users.repository.UserRepository;
+import jakarta.servlet.http.HttpSession;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -58,6 +60,22 @@ public class UserService {
 
         // Entity -> Response DTO 변환 후 반환
         return UserDTO.Response.toDTO(savedUser);
+    }
+
+    public UserDTO.Response login(UserDTO.LoginRequest loginRequest) {
+        // 아이디 없음
+        User user = userRepository.findByLoginId(loginRequest.getLoginId())
+                .orElseThrow(() -> new CustomException(ErrorCode.USER_NOT_FOUND));
+
+        // 비밀번호 비교 (입력 비번 vs DB 암호화 비번)
+        if (!passwordEncoder.matches(loginRequest.getPswd(), user.getPswd())) {
+            throw new CustomException(ErrorCode.PASSWORD_NOT_MATCH);
+        }
+
+        // 세션에 사용자 정보 저장
+        httpSession.setAttribute("USER_SESSION", new SessionUser(user));
+
+        return UserDTO.Response.toDTO(user);
     }
 
     public void validateDuplicateLoginId(String loginId) {
