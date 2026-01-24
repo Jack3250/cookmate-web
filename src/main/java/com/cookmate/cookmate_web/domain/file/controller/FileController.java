@@ -109,4 +109,26 @@ public class FileController {
                 .headers(headers)
                 .body(resource);
     }
+
+    /**
+     * 단일 파일 삭제
+     * @param fileId 파일 ID
+     * @return 파일 삭제 성공 여부
+     */
+    @DeleteMapping("/delete/{fileId}")
+    public ResponseEntity<Void> deleteFile(@PathVariable String fileId) {
+        fileService.deleteFile(fileId);
+        return ResponseEntity.ok().build();
+    }
+
+    /**
+     * 파일 그룹 삭제
+     * @param fileGrpId 파일 그룹 ID
+     * @return 파일 그룹 삭제 성공 여부
+     */
+    @DeleteMapping("/delete/group/{fileGrpId}")
+    public ResponseEntity<Void> deleteFileGroup(@PathVariable String fileGrpId) {
+        fileService.deleteFileGroup(fileGrpId);
+        return ResponseEntity.ok().build();
+    }
 }

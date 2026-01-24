@@ -3,6 +3,7 @@ package com.cookmate.cookmate_web.domain.file.repository;
 import com.cookmate.cookmate_web.domain.file.entity.FileDetail;
 import com.cookmate.cookmate_web.domain.file.entity.FileGroup;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
@@ -50,4 +51,12 @@ public interface FileDetailRepository extends JpaRepository<FileDetail, Long> {
      */
     @Query("SELECT fileDetail FROM FileDetail fileDetail WHERE fileDetail.fileId = :fileId AND fileDetail.delYn = 'N'")
     Optional<FileDetail> findByFileIdAndDelYn(@Param("fileId") String fileId);
+
+    /**
+     * 파일 그룹에 해당하는 파일 삭제
+     * @param fileGrpSeq 파일 그룹 Seq
+     */
+    @Modifying
+    @Query("UPDATE FileDetail fileDetail SET fileDetail.delYn = 'Y' WHERE fileDetail.fileGroup.fileGrpSeq = :fileGrpSeq")
+    void deleteAllByFileGrpSeq(@Param("fileGrpSeq") Long fileGrpSeq);
 }

@@ -57,4 +57,9 @@ public class FileGroup {
     @Builder.Default
     private String delYn = "N";
 
+    // 파일 그룹 삭제를 위한 delYn 상태값 변경
+    public void deleteFileGrp() {
+        this.delYn = "Y";
+    }
+
 }

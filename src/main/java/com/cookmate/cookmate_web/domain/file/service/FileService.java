@@ -152,6 +152,57 @@ public class FileService {
     }
 
     /**
+     * 단일 파일 삭제
+     * @param fileId 파일 ID
+     */
+    @Transactional
+    public void deleteFile(String fileId) {
+        // 이미 삭제된 파일인지 체크
+        FileDetail fileDetail = fileDetailRepository.findByFileIdAndDelYn(fileId)
+                .orElseThrow(() -> new CustomException(ErrorCode.FILE_NOT_FOUND));
+
+        // 파일 삭제 처리
+        fileDetail.deleteFile();
+    }
+
+    /**
+     * 파일 그룹 전체 삭제
+     * @param fileGrpId 파일 그룹 ID
+     */
+    @Transactional
+    public void deleteFileGroup(String fileGrpId) {
+        // 그룹 존재 확인
+        FileGroup fileGroup = fileGroupRepository.findFileGroup(fileGrpId)
+                .orElseThrow(() -> new CustomException(ErrorCode.FILE_NOT_FOUND));
+
+        // 하위 파일들 일괄 삭제
+        fileDetailRepository.deleteAllByFileGrpSeq(fileGroup.getFileGrpSeq());
+
+        // 그룹 삭제
+        fileGroup.deleteFileGrp();
+    }
+
+    /**
+     * 파일 수정
+     * - 새로 추가된 파일들은 저장
+     * - 삭제된 파일 ID 목록은 삭제 처리
+     */
+    @Transactional
+    public void updateFiles(String fileGrpId, List<MultipartFile> newFiles, List<String> deleteFiles, String rgtrKey) throws IOException {
+        // 삭제 요청된 파일들 처리
+        if (deleteFiles != null && !deleteFiles.isEmpty()) {
+            for (String fileId : deleteFiles) {
+                deleteFile(fileId);
+            }
+        }
+
+        // 새로 추가된 파일들 저장
+        if (newFiles != null && !newFiles.isEmpty()) {
+            saveFile(newFiles, fileGrpId, rgtrKey); // 기존 saveFiles 재활용 (그룹ID가 있으므로 추가됨)
+        }
+    }
+
+    /**
      * 오늘 날짜 경로 추출 함수
      * @return yyyy/MM/dd 형식의 오늘 날짜
      */

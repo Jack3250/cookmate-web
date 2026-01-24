@@ -73,6 +73,12 @@ public class FileDetail {
     @Builder.Default
     private String delYn = "N";
 
+    // 파일 삭제를 위한 delYn 상태값 변경
+    public void deleteFile() {
+        this.delYn = "Y";
+        this.delDt = LocalDateTime.now();
+    }
+
     // 파일그룹 조인
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "file_grp_seq", nullable = false)
