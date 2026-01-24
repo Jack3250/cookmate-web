@@ -50,23 +50,23 @@ public class FileService {
     /**
      * 파일 저장
      * @param files 파일
-     * @param fileGrpSeq 파일 그룹 ID
+     * @param fileGrpId 파일 그룹 ID
      * @param rgtrKey 등록자 키
      * @return 파일 그룹 ID
      * @throws IOException 파일 저장 실패 시
      */
     @Transactional
-    public Long saveFile(List<MultipartFile> files, Long fileGrpSeq, String rgtrKey) throws IOException {
+    public String saveFile(List<MultipartFile> files, String fileGrpId, String rgtrKey) throws IOException {
 
         if (files == null || files.isEmpty()) {
-            return fileGrpSeq;
+            return fileGrpId;
         }
 
         FileGroup fileGroup;
         String folderPath;
 
         // FileGroup 조회 또는 생성
-        if (fileGrpSeq == null) {
+        if (fileGrpId == null) {
             folderPath = getFolder();
             FileGroup newGroup = FileGroup.builder()
                     .fileGrpId(KeygenUtil.generateKey())
@@ -75,7 +75,7 @@ public class FileService {
                     .build();
             fileGroup = fileGroupRepository.save(newGroup);
         } else { // 기존 파일 그룹 ID가 있을 경우
-            fileGroup = fileGroupRepository.findActiveFileGroup(fileGrpSeq)
+            fileGroup = fileGroupRepository.findFileGroup(fileGrpId)
                     .orElseThrow(() -> new CustomException(ErrorCode.FILE_NOT_FOUND));
             folderPath = fileGroup.getFilePath();
         }
@@ -120,7 +120,7 @@ public class FileService {
             fileDetailRepository.save(fileDetail);
         }
 
-        return fileGroup.getFileGrpSeq();
+        return fileGroup.getFileGrpId();
     }
 
     /**

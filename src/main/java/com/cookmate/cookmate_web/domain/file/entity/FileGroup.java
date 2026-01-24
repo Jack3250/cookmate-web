@@ -39,7 +39,7 @@ public class FileGroup {
     @Column(name = "file_grp_seq", nullable = false)
     private Long fileGrpSeq;
 
-    @Column(name = "file_grp_id", nullable = false, length = 20)
+    @Column(name = "file_grp_id", unique = true, nullable = false, length = 20)
     private String fileGrpId;
 
     @Column(name = "file_path", nullable = false, length = 500)

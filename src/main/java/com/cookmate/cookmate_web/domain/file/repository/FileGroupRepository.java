@@ -27,9 +27,9 @@ public interface FileGroupRepository extends JpaRepository<FileGroup, Long> {
 
     /**
      * 파일 그룹 조회
-     * @param fileGrpSeq 파일 그룹 Seq
+     * @param fileGrpId 파일 그룹 Seq
      * @return 파일 그룹
      */
-    @Query("SELECT fg FROM FileGroup fg WHERE fg.fileGrpSeq = :fileGrpSeq AND fg.delYn = 'N'")
-    Optional<FileGroup> findActiveFileGroup(@Param("fileGrpSeq") Long fileGrpSeq);
+    @Query("SELECT fileGroup FROM FileGroup fileGroup WHERE fileGroup.fileGrpId = :fileGrpId AND fileGroup.delYn = 'N'")
+    Optional<FileGroup> findFileGroup(@Param("fileGrpId") String fileGrpId);
 }

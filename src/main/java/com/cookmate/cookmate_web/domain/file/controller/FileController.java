@@ -41,11 +41,18 @@ public class FileController {
 
     private final FileService fileService;
 
+    /**
+     * 파일 업로드
+     * @param files 파일 목록
+     * @param fileGrpId 파일 그룹 ID
+     * @param rgtrKey 등록자 키
+     * @return 파일 그룹 ID
+     */
     @PostMapping("/upload")
-    public ResponseEntity<Long> uploadFiles(List<MultipartFile> files, Long fileGrpSeq, String rgtrKey) {
+    public ResponseEntity<String> uploadFiles(List<MultipartFile> files, String fileGrpId, String rgtrKey) {
         try {
-            Long savedGroupId = fileService.saveFile(files, fileGrpSeq, rgtrKey);
-            return ResponseEntity.ok(savedGroupId);
+            String saveFileGrpId = fileService.saveFile(files, fileGrpId, rgtrKey);
+            return ResponseEntity.ok(saveFileGrpId);
         } catch (Exception e) {
             log.error("FileController.uploadFiles => {}", e.getMessage());
             return ResponseEntity.internalServerError().build();
