@@ -38,6 +38,9 @@ public enum ErrorCode {
 
     // 비로그인
     , UNAUTHORIZED_ACCESS(401, "auth.login.required")
+
+    // 레시피 관련
+    , RECIPE_NOT_FOUND(404, "recipe.not.found")
     ;
 
     private final int status;

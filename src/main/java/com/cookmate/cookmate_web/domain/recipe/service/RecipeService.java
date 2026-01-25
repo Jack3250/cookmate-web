@@ -2,7 +2,10 @@ package com.cookmate.cookmate_web.domain.recipe.service;
 
 import com.cookmate.cookmate_web.domain.common.util.KeygenUtil;
 import com.cookmate.cookmate_web.domain.file.service.FileService;
+import com.cookmate.cookmate_web.domain.global.error.CustomException;
+import com.cookmate.cookmate_web.domain.global.error.ErrorCode;
 import com.cookmate.cookmate_web.domain.recipe.dto.RecipeDTO;
+import com.cookmate.cookmate_web.domain.recipe.dto.RecipeDetailDTO;
 import com.cookmate.cookmate_web.domain.recipe.entity.Ingredient;
 import com.cookmate.cookmate_web.domain.recipe.entity.Recipe;
 import com.cookmate.cookmate_web.domain.recipe.entity.RecipeStep;
@@ -147,6 +150,55 @@ public class RecipeService {
 
         return result;
     }
+
+    /**
+     * 레시피 상세 조회
+     * @param recipeId 레시피 ID
+     * @return 레시피 상세 정보
+     */
+    @Transactional(readOnly = true)
+    public RecipeDetailDTO.Response findRecipeDetail(String recipeId) {
+        Recipe recipe = recipeRepository.findByRecipeIdAndDelYn(recipeId)
+                .orElseThrow(() -> new CustomException(ErrorCode.RECIPE_NOT_FOUND));
+
+        // 메인 이미지 가져오기
+        List<String> mainImageUrls = fileService.getFileUrls(recipe.getFileGrpId());
+
+        // 재료 변환
+        List<RecipeDetailDTO.IngredientResponse> ingredients = new ArrayList<>();
+
+        for (Ingredient ingredient : recipe.getIngredients()) {
+            RecipeDetailDTO.IngredientResponse ingredientDto = RecipeDetailDTO.IngredientResponse.from(ingredient);
+            ingredients.add(ingredientDto);
+        }
+
+        // 조리 단계 변환
+        List<RecipeDetailDTO.StepResponse> steps = new ArrayList<>();
+
+        for (RecipeStep step : recipe.getRecipeSteps()) {
+            steps.add(RecipeDetailDTO.StepResponse.builder()
+                    .stepNo(step.getStepNo())
+                    .stepCn(step.getStepCn())
+                    .stepImageUrls(fileService.getFileUrls(step.getFileGrpId()))
+                    .build());
+        }
+
+        return RecipeDetailDTO.Response.builder()
+                .recipeId(recipe.getRecipeId())
+                .recipeTtl(recipe.getRecipeTtl())
+                .dishNm(recipe.getDishNm())
+                .recipeCn(recipe.getRecipeCn())
+                .cookingTime(recipe.getCookingTime())
+                .recipeDifficultCd(recipe.getRecipeDifficultCd())
+                .categoryCd(recipe.getCategoryCd())
+                .writerName(recipe.getRgtrKey()) // TODO : 차후 USER 객체 가져오면 닉네임으로 변경
+                .regDt(recipe.getRegDt())
+                .mainImageUrls(mainImageUrls)
+                .ingredients(ingredients)
+                .steps(steps)
+                .build();
+    }
+
     /*
     ========================================================
     헬퍼 메소드

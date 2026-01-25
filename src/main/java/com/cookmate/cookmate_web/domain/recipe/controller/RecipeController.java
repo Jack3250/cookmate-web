@@ -1,6 +1,7 @@
 package com.cookmate.cookmate_web.domain.recipe.controller;
 
 import com.cookmate.cookmate_web.domain.recipe.dto.RecipeDTO;
+import com.cookmate.cookmate_web.domain.recipe.dto.RecipeDetailDTO;
 import com.cookmate.cookmate_web.domain.recipe.service.RecipeService;
 import jakarta.servlet.http.HttpSession;
 import lombok.RequiredArgsConstructor;
@@ -72,5 +73,15 @@ public class RecipeController {
     @GetMapping("/list")
     public ResponseEntity<List<RecipeDTO.Response>> findAll() {
         return ResponseEntity.ok(recipeService.findAllRecipe());
+    }
+
+    /**
+     * 레시피 상세 조회
+     * @param recipeId 레시피 ID
+     * @return 레시피 상세 정보
+     */
+    @GetMapping("/detail/{recipeId}")
+    public ResponseEntity<RecipeDetailDTO.Response> findDetail(@PathVariable String recipeId) {
+        return ResponseEntity.ok(recipeService.findRecipeDetail(recipeId));
     }
 }
