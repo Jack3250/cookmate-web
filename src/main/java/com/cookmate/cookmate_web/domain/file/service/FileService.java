@@ -19,6 +19,7 @@ import java.io.File;
 import java.io.IOException;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
@@ -53,7 +54,6 @@ public class FileService {
      * @param fileGrpId 파일 그룹 ID
      * @param rgtrKey 등록자 키
      * @return 파일 그룹 ID
-     * @throws IOException 파일 저장 실패 시
      */
     @Transactional
     public String saveFile(List<MultipartFile> files, String fileGrpId, String rgtrKey) {
@@ -210,6 +210,37 @@ public class FileService {
     }
 
     /**
+     * 파일 URL 목록 조회
+     * @param fileGrpId 파일 그룹 ID
+     * @return 파일 URL 목록
+     */
+    public List<String> getFileUrls(String fileGrpId) {
+        List<String> result = new ArrayList<>();
+
+        if (fileGrpId == null || fileGrpId.isEmpty()) {
+            return result;
+        }
+
+        FileGroup fileGroup = fileGroupRepository.findFileGroup(fileGrpId)
+                .orElseThrow(() -> new CustomException(ErrorCode.FILE_NOT_FOUND));
+
+        List<FileDetail> fileDetailList = fileDetailRepository.findAllActiveFiles(fileGroup);
+
+        for(FileDetail fileDetail : fileDetailList) {
+            String fileUrls = "/files/view/" + fileDetail.getFileId();
+            result.add(fileUrls);
+        }
+
+        return result;
+    }
+
+    /*
+    ========================================================
+    헬퍼 메소드
+    ========================================================
+     */
+
+    /**
      * 오늘 날짜 경로 추출 함수
      * @return yyyy/MM/dd 형식의 오늘 날짜
      */
@@ -230,5 +261,4 @@ public class FileService {
         }
         return fileName.substring(fileName.lastIndexOf(".") + 1);
     }
-
 }
