@@ -56,7 +56,7 @@ public class FileService {
      * @throws IOException 파일 저장 실패 시
      */
     @Transactional
-    public String saveFile(List<MultipartFile> files, String fileGrpId, String rgtrKey) throws IOException {
+    public String saveFile(List<MultipartFile> files, String fileGrpId, String rgtrKey) {
 
         if (files == null || files.isEmpty()) {
             return fileGrpId;
@@ -104,7 +104,11 @@ public class FileService {
 
             // 물리 저장
             File saveFile = new File(directory, fileSaveNm);
-            file.transferTo(saveFile);
+            try {
+                file.transferTo(saveFile);
+            } catch (IOException e) {
+                throw new CustomException(ErrorCode.INTERNAL_SERVER_ERROR);
+            }
 
             FileDetail fileDetail = FileDetail.builder()
                     .fileGroup(fileGroup)
