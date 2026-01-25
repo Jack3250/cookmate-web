@@ -28,7 +28,7 @@ public class RecipeDTO {
     @Getter
     @NoArgsConstructor
     @AllArgsConstructor
-    public static class SaveRequest {
+    public static class Request {
         private String recipeTtl;
         private String dishNm;
         private String recipeCn;
@@ -37,14 +37,14 @@ public class RecipeDTO {
         private String categoryCd;
         private String fileGrpId;
         private String recipeStatus;
-        private List<IngredientDto> ingredients;
-        private List<StepDto> steps;
+        private List<IngredientRequest> ingredients;
+        private List<StepRequest> steps;
     }
 
     @Getter
     @NoArgsConstructor
     @AllArgsConstructor
-    public static class IngredientDto {
+    public static class IngredientRequest {
         private String ingrdNm;
         private Float ingrdAmt;
         private String ingrdUnt;
@@ -53,7 +53,7 @@ public class RecipeDTO {
     @Getter
     @NoArgsConstructor
     @AllArgsConstructor
-    public static class StepDto {
+    public static class StepRequest {
         private Integer stepNo;
         private String stepCn;
     }

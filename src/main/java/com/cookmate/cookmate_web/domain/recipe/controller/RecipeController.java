@@ -34,10 +34,17 @@ public class RecipeController {
 
     private final RecipeService recipeService;
 
-    // 레시피 등록
+    /**
+     * 레시피 등록
+     * @param request 등록 요청 데이터
+     * @param mainImage 메인 사진
+     * @param multipartRequest 단계별 사진을 추출하기 위한 요청 객체
+     * @param session 로그인 세션
+     * @return 레시피 ID
+     */
     @PostMapping(value = "/save", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<String> save(
-            @RequestPart(value = "data") RecipeDTO.SaveRequest request,
+            @RequestPart(value = "data") RecipeDTO.Request request,
             @RequestPart(value = "mainImage", required = false) List<MultipartFile> mainImage, // 메인 사진
             MultipartHttpServletRequest multipartRequest, // 단계별 사진을 추출하기 위한 요청 객체
             HttpSession session

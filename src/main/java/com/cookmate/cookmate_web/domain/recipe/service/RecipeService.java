@@ -6,6 +6,7 @@ import com.cookmate.cookmate_web.domain.recipe.dto.RecipeDTO;
 import com.cookmate.cookmate_web.domain.recipe.entity.Ingredient;
 import com.cookmate.cookmate_web.domain.recipe.entity.Recipe;
 import com.cookmate.cookmate_web.domain.recipe.entity.RecipeStep;
+import com.cookmate.cookmate_web.domain.recipe.repository.RecipeRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -43,13 +44,13 @@ public class RecipeService {
      * 레시피 등록
      * @param loginId       로그인 ID
      * @param request       저장 요청 데이터
-     * @param files         메인 사진
+     * @param mainImage         메인 사진
      * @param stepImagesMap 단계별 사진 목록
      * @return 레시피 ID
      */
     @Transactional
     public String saveRecipe(String loginId,
-                             RecipeDTO.SaveRequest request,
+                             RecipeDTO.Request request,
                              List<MultipartFile> mainImage,
                              Map<Integer, List<MultipartFile>> stepImagesMap) {
         /*
@@ -77,7 +78,6 @@ public class RecipeService {
                 .fileGrpId(mainFileGrpId)
 //                .user(user)
                 .rgtrKey(rgtrKey)
-                .fileGrpId(request.getFileGrpId())
                 .recipeStatus(request.getRecipeStatus())
                 .viewCnt(0)
                 .delYn("N")
@@ -85,7 +85,7 @@ public class RecipeService {
 
         // 재료 추가
         if (request.getIngredients() != null) {
-            for (RecipeDTO.IngredientDto dto : request.getIngredients()) {
+            for (RecipeDTO.IngredientRequest dto : request.getIngredients()) {
                 recipe.addIngredient(Ingredient.builder()
                         .ingrdNm(dto.getIngrdNm())
                         .ingrdAmt(dto.getIngrdAmt())
@@ -96,10 +96,10 @@ public class RecipeService {
 
         // 조리 단계 및 단계별 사진 추가
         if (request.getSteps() != null) {
-            List<RecipeDTO.StepDto> steps = request.getSteps();
+            List<RecipeDTO.StepRequest> steps = request.getSteps();
 
             for (int i = 0; i < steps.size(); i++) {
-                RecipeDTO.StepDto step = steps.get(i);
+                RecipeDTO.StepRequest step = steps.get(i);
 
                 // 해당 순서 이미지 확인
                 String stepFileGrpId = null;
