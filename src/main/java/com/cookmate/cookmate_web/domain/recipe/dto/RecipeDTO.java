@@ -57,4 +57,36 @@ public class RecipeDTO {
         private Integer stepNo;
         private String stepCn;
     }
+
+    @Getter
+    @Builder
+    @AllArgsConstructor
+    @NoArgsConstructor
+    public static class Response {
+        private String recipeId;
+        private String recipeTtl;
+        private String dishNm;
+        private String writerName;
+        private Integer viewCnt;
+        private String categoryCd;
+        private String recipeDifficultCd;
+        private String mainImageUrl;
+        private LocalDateTime regDt;
+
+        // Entity -> DTO 변환 (이미지 URL은 서비스에서 별도 주입 필요)
+        public static Response from(Recipe recipe, String mainImageUrl) {
+            return Response.builder()
+                    .recipeId(recipe.getRecipeId())
+                    .recipeTtl(recipe.getRecipeTtl())
+                    .dishNm(recipe.getDishNm())
+                    .writerName(recipe.getRgtrKey()) // TODO : 차후 USER 객체 가져오면 닉네임으로 변경
+                    .viewCnt(recipe.getViewCnt())
+                    .categoryCd(recipe.getCategoryCd())
+                    .recipeDifficultCd(recipe.getRecipeDifficultCd())
+                    .mainImageUrl(mainImageUrl)
+                    .regDt(recipe.getRegDt())
+                    .build();
+        }
+    }
+
 }

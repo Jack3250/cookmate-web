@@ -1,4 +1,9 @@
 package com.cookmate.cookmate_web.domain.recipe.repository;
+
+import com.cookmate.cookmate_web.domain.recipe.entity.Recipe;
+import org.springframework.data.jpa.repository.JpaRepository;
+
+import java.util.List;
 /**
  * @file        RecipeRepository.java
  * @description 레시피 리포지토리
@@ -14,4 +19,11 @@ package com.cookmate.cookmate_web.domain.recipe.repository;
  */
 
 public interface RecipeRepository extends JpaRepository<Recipe, Long> {
+
+    /**
+     * 레시피 목록 조회
+     * @param delYn 삭제 여부
+     * @return 레시피 목록
+     */
+    List<Recipe> findByDelYnOrderByRecipeSeqDesc(String delYn);
 }

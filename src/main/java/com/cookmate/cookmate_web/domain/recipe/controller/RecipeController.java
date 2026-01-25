@@ -64,4 +64,13 @@ public class RecipeController {
 
         return ResponseEntity.ok(recipeService.saveRecipe(loginId, request, mainImage, stepImagesMap));
     }
+
+    /**
+     * 레시피 목록 조회
+     * @return 레시피 목록
+     */
+    @GetMapping("/list")
+    public ResponseEntity<List<RecipeDTO.Response>> findAll() {
+        return ResponseEntity.ok(recipeService.findAllRecipe());
+    }
 }

@@ -119,12 +119,47 @@ public class RecipeService {
     }
 
     /**
+     * 레시피 목록 조회
+     * @return 레시피 목록
+     */
+    @Transactional(readOnly = true)
+    public List<RecipeDTO.Response> findAllRecipe() {
+        List<RecipeDTO.Response> result = new ArrayList<>();
+
+        // 삭제되지 않은 레시피 최신순 조회
+        List<Recipe> recipeList = recipeRepository.findByDelYnOrderByRecipeSeqDesc("N");
+
+        if (!recipeList.isEmpty()) {
+            for(Recipe recipe : recipeList) {
+                // 대표 이미지 URL 가져오기
+                List<String> urls = fileService.getFileUrls(recipe.getFileGrpId());
+
+                String mainImageUrl = null;
+                if (!urls.isEmpty()) {
+                    mainImageUrl = urls.get(0);
+                }
+
+                // DTO 변환
+                RecipeDTO.Response response = RecipeDTO.Response.from(recipe, mainImageUrl);
+                result.add(response);
+            }
+        }
+
+        return result;
+    }
+    /*
+    ========================================================
+    헬퍼 메소드
+    ========================================================
+     */
+
+    /**
      * 단계별 사진 추출
      * @param request 저장 요청 데이터
      * @param multipartRequest 단계별 사진을 추출하기 위한 요청 객체
      * @return 단계별 사진 목록
      */
-    public Map<Integer, List<MultipartFile>> extractStepImages(RecipeDTO.SaveRequest request, MultipartHttpServletRequest multipartRequest) {
+    public Map<Integer, List<MultipartFile>> extractStepImages(RecipeDTO.Request request, MultipartHttpServletRequest multipartRequest) {
         Map<Integer, List<MultipartFile>> stepImagesMap = new HashMap<>();
 
         if (request.getSteps() != null) {
