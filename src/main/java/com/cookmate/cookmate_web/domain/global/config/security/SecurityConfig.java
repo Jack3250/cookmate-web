@@ -42,7 +42,8 @@ public class SecurityConfig {
                         , "/users/regist"
                         , "/users/login"
                         , "/files/**"
-                    ).permitAll() // 가입 및 공통 메시지 허용
+                        , "/recipe/**"
+                    ).permitAll() // 허용 페이지
                 .anyRequest().authenticated() // 그 외는 인증 필요
             );
 
