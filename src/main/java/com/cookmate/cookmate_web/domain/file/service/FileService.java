@@ -19,6 +19,7 @@ import java.io.File;
 import java.io.IOException;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
@@ -53,10 +54,9 @@ public class FileService {
      * @param fileGrpId 파일 그룹 ID
      * @param rgtrKey 등록자 키
      * @return 파일 그룹 ID
-     * @throws IOException 파일 저장 실패 시
      */
     @Transactional
-    public String saveFile(List<MultipartFile> files, String fileGrpId, String rgtrKey) throws IOException {
+    public String saveFile(List<MultipartFile> files, String fileGrpId, String rgtrKey) {
 
         if (files == null || files.isEmpty()) {
             return fileGrpId;
@@ -104,7 +104,11 @@ public class FileService {
 
             // 물리 저장
             File saveFile = new File(directory, fileSaveNm);
-            file.transferTo(saveFile);
+            try {
+                file.transferTo(saveFile);
+            } catch (IOException e) {
+                throw new CustomException(ErrorCode.INTERNAL_SERVER_ERROR);
+            }
 
             FileDetail fileDetail = FileDetail.builder()
                     .fileGroup(fileGroup)
@@ -188,10 +192,9 @@ public class FileService {
      * @param newFiles 새로 추가된 파일 목록
      * @param deleteFiles 삭제 요청된 파일 목록
      * @param rgtrKey 등록자 키
-     * @throws IOException 파일 저장 실패 시
      */
     @Transactional
-    public void updateFiles(String fileGrpId, List<MultipartFile> newFiles, List<String> deleteFiles, String rgtrKey) throws IOException {
+    public void updateFiles(String fileGrpId, List<MultipartFile> newFiles, List<String> deleteFiles, String rgtrKey) {
         // 삭제 요청된 파일들 처리
         if (deleteFiles != null && !deleteFiles.isEmpty()) {
             for (String fileId : deleteFiles) {
@@ -204,6 +207,37 @@ public class FileService {
             saveFile(newFiles, fileGrpId, rgtrKey); // 기존 saveFiles 재활용 (그룹ID가 있으므로 추가됨)
         }
     }
+
+    /**
+     * 파일 URL 목록 조회
+     * @param fileGrpId 파일 그룹 ID
+     * @return 파일 URL 목록
+     */
+    public List<String> getFileUrls(String fileGrpId) {
+        List<String> result = new ArrayList<>();
+
+        if (fileGrpId == null || fileGrpId.isEmpty()) {
+            return result;
+        }
+
+        FileGroup fileGroup = fileGroupRepository.findFileGroup(fileGrpId)
+                .orElseThrow(() -> new CustomException(ErrorCode.FILE_NOT_FOUND));
+
+        List<FileDetail> fileDetailList = fileDetailRepository.findAllActiveFiles(fileGroup);
+
+        for(FileDetail fileDetail : fileDetailList) {
+            String fileUrls = "/files/view/" + fileDetail.getFileId();
+            result.add(fileUrls);
+        }
+
+        return result;
+    }
+
+    /*
+    ========================================================
+    헬퍼 메소드
+    ========================================================
+     */
 
     /**
      * 오늘 날짜 경로 추출 함수
@@ -226,5 +260,4 @@ public class FileService {
         }
         return fileName.substring(fileName.lastIndexOf(".") + 1);
     }
-
 }
