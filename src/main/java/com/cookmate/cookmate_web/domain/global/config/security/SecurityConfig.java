@@ -40,7 +40,9 @@ public class SecurityConfig {
                 .requestMatchers(
                         "/common/**"
                         , "/users/*"
-                    ).permitAll() // 가입 및 공통 메시지 허용
+                        , "/files/**"
+                        , "/recipe/**"
+                    ).permitAll() // 허용 페이지
                 .anyRequest().authenticated() // 그 외는 인증 필요
             );
 

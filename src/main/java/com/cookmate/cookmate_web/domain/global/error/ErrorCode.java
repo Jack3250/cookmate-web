@@ -22,17 +22,25 @@ import lombok.Getter;
 public enum ErrorCode {
 
     // 로그인 실패
-    USER_NOT_FOUND(400, "valid.user.login.fail")
-    , PASSWORD_NOT_MATCH(400, "valid.user.login.fail")
+    USER_NOT_FOUND(401, "valid.user.login.fail")
+    , PASSWORD_NOT_MATCH(401, "valid.user.login.fail")
 
-    // 입력값 중복
+    // 입력값 검증
     , DUPLICATE_VALUE(400, "valid.common.duplicate")
-
-    // 잘못된 입력값
     , INVALID_INPUT_VALUE(400, "valid.common.invalid")
 
     // 서버 오류
-    , INTERNAL_SERVER_ERROR(500, "valid.common.server.error")
+    , INTERNAL_SERVER_ERROR(500, "sys.server.error")
+
+    // 파일관련
+    , FILE_NOT_FOUND(404, "file.not.found")
+    , FILE_SAVE_ERROR(500, "file.save.error")
+
+    // 비로그인
+    , UNAUTHORIZED_ACCESS(401, "auth.login.required")
+
+    // 레시피 관련
+    , RECIPE_NOT_FOUND(404, "recipe.not.found")
     ;
 
     private final int status;
