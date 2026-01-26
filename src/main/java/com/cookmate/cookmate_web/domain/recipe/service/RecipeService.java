@@ -4,8 +4,8 @@ import com.cookmate.cookmate_web.domain.common.util.KeygenUtil;
 import com.cookmate.cookmate_web.domain.file.service.FileService;
 import com.cookmate.cookmate_web.domain.global.error.CustomException;
 import com.cookmate.cookmate_web.domain.global.error.ErrorCode;
-import com.cookmate.cookmate_web.domain.recipe.dto.RecipeDTO;
-import com.cookmate.cookmate_web.domain.recipe.dto.RecipeDetailDTO;
+import com.cookmate.cookmate_web.domain.recipe.dto.RecipeRequestDTO;
+import com.cookmate.cookmate_web.domain.recipe.dto.RecipeResponseDTO;
 import com.cookmate.cookmate_web.domain.recipe.entity.Ingredient;
 import com.cookmate.cookmate_web.domain.recipe.entity.Recipe;
 import com.cookmate.cookmate_web.domain.recipe.entity.RecipeStep;
@@ -53,7 +53,7 @@ public class RecipeService {
      */
     @Transactional
     public String saveRecipe(String loginId,
-                             RecipeDTO.Request request,
+                             RecipeRequestDTO.Request request,
                              List<MultipartFile> mainImage,
                              Map<Integer, List<MultipartFile>> stepImagesMap) {
         /*
@@ -87,24 +87,16 @@ public class RecipeService {
                 .build();
 
         // 재료 추가
-        if (request.getIngredients() != null) {
-            for (RecipeDTO.IngredientRequest dto : request.getIngredients()) {
-                recipe.addIngredient(Ingredient.builder()
-                        .ingrdNm(dto.getIngrdNm())
-                        .ingrdAmt(dto.getIngrdAmt())
-                        .ingrdUnt(dto.getIngrdUnt())
-                        .build());
-            }
-        }
+        addIngredients(request, recipe);
 
         // 조리 단계 및 단계별 사진 추가
         if (request.getSteps() != null) {
-            List<RecipeDTO.StepRequest> steps = request.getSteps();
+            List<RecipeRequestDTO.Step> steps = request.getSteps();
 
             for (int i = 0; i < steps.size(); i++) {
-                RecipeDTO.StepRequest step = steps.get(i);
+                RecipeRequestDTO.Step step = steps.get(i);
 
-                // 해당 순서 이미지 확인
+                // 해당 순서 이미지 유무 확인 밎 저장
                 String stepFileGrpId = null;
                 if (stepImagesMap.containsKey(i)) {
                     stepFileGrpId = fileService.saveFile(stepImagesMap.get(i), null, rgtrKey);
@@ -126,8 +118,8 @@ public class RecipeService {
      * @return 레시피 목록
      */
     @Transactional(readOnly = true)
-    public List<RecipeDTO.Response> findAllRecipe() {
-        List<RecipeDTO.Response> result = new ArrayList<>();
+    public List<RecipeResponseDTO.Summary> findAllRecipe() {
+        List<RecipeResponseDTO.Summary> result = new ArrayList<>();
 
         // 삭제되지 않은 레시피 최신순 조회
         List<Recipe> recipeList = recipeRepository.findByDelYnOrderByRecipeSeqDesc("N");
@@ -143,7 +135,7 @@ public class RecipeService {
                 }
 
                 // DTO 변환
-                RecipeDTO.Response response = RecipeDTO.Response.from(recipe, mainImageUrl);
+                RecipeResponseDTO.Summary response = RecipeResponseDTO.Summary.from(recipe, mainImageUrl);
                 result.add(response);
             }
         }
@@ -157,7 +149,7 @@ public class RecipeService {
      * @return 레시피 상세 정보
      */
     @Transactional(readOnly = true)
-    public RecipeDetailDTO.Response findRecipeDetail(String recipeId) {
+    public RecipeResponseDTO.Detail findRecipeDetail(String recipeId) {
         Recipe recipe = recipeRepository.findByRecipeIdAndDelYn(recipeId)
                 .orElseThrow(() -> new CustomException(ErrorCode.RECIPE_NOT_FOUND));
 
@@ -165,25 +157,23 @@ public class RecipeService {
         List<String> mainImageUrls = fileService.getFileUrls(recipe.getFileGrpId());
 
         // 재료 변환
-        List<RecipeDetailDTO.IngredientResponse> ingredients = new ArrayList<>();
-
+        List<RecipeResponseDTO.IngredientDto> ingredients = new ArrayList<>();
         for (Ingredient ingredient : recipe.getIngredients()) {
-            RecipeDetailDTO.IngredientResponse ingredientDto = RecipeDetailDTO.IngredientResponse.from(ingredient);
+            RecipeResponseDTO.IngredientDto ingredientDto = RecipeResponseDTO.IngredientDto.from(ingredient);
             ingredients.add(ingredientDto);
         }
 
         // 조리 단계 변환
-        List<RecipeDetailDTO.StepResponse> steps = new ArrayList<>();
-
+        List<RecipeResponseDTO.StepDto> steps = new ArrayList<>();
         for (RecipeStep step : recipe.getRecipeSteps()) {
-            steps.add(RecipeDetailDTO.StepResponse.builder()
+            steps.add(RecipeResponseDTO.StepDto.builder()
                     .stepNo(step.getStepNo())
                     .stepCn(step.getStepCn())
                     .stepImageUrls(fileService.getFileUrls(step.getFileGrpId()))
                     .build());
         }
 
-        return RecipeDetailDTO.Response.builder()
+        return RecipeResponseDTO.Detail.builder()
                 .recipeId(recipe.getRecipeId())
                 .recipeTtl(recipe.getRecipeTtl())
                 .dishNm(recipe.getDishNm())
@@ -206,12 +196,31 @@ public class RecipeService {
      */
 
     /**
+     * 재료 추가
+     * @param request 저장 요청 데이터
+     * @param recipe 레시피 엔티티
+     */
+    private void addIngredients(RecipeRequestDTO.Request request, Recipe recipe) {
+        if (request.getIngredients() != null) {
+            for (RecipeRequestDTO.Ingredient dto : request.getIngredients()) {
+                recipe.addIngredient(Ingredient.builder()
+                        .ingrdNm(dto.getIngrdNm())
+                        .ingrdAmt(dto.getIngrdAmt())
+                        .ingrdUnt(dto.getIngrdUnt())
+                        .build());
+            }
+        }
+    }
+
+
+    /**
      * 단계별 사진 추출
      * @param request 저장 요청 데이터
      * @param multipartRequest 단계별 사진을 추출하기 위한 요청 객체
      * @return 단계별 사진 목록
      */
-    public Map<Integer, List<MultipartFile>> extractStepImages(RecipeDTO.Request request, MultipartHttpServletRequest multipartRequest) {
+    public Map<Integer, List<MultipartFile>> extractStepImages(RecipeRequestDTO.Request request,
+                                                               MultipartHttpServletRequest multipartRequest) {
         Map<Integer, List<MultipartFile>> stepImagesMap = new HashMap<>();
 
         if (request.getSteps() != null) {

@@ -107,6 +107,11 @@ public class Recipe {
     @Builder.Default
     private List<RecipeStep> recipeSteps = new ArrayList<>();
 
+    /*
+    ========================================================
+    등록 헬퍼 메서드
+    ========================================================
+     */
     // 재료 추가
     public void addIngredient(Ingredient ingredient) {
         this.ingredients.add(ingredient);

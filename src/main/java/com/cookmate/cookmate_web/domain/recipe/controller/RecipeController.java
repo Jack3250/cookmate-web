@@ -1,7 +1,7 @@
 package com.cookmate.cookmate_web.domain.recipe.controller;
 
-import com.cookmate.cookmate_web.domain.recipe.dto.RecipeDTO;
-import com.cookmate.cookmate_web.domain.recipe.dto.RecipeDetailDTO;
+import com.cookmate.cookmate_web.domain.recipe.dto.RecipeRequestDTO;
+import com.cookmate.cookmate_web.domain.recipe.dto.RecipeResponseDTO;
 import com.cookmate.cookmate_web.domain.recipe.service.RecipeService;
 import jakarta.servlet.http.HttpSession;
 import lombok.RequiredArgsConstructor;
@@ -45,8 +45,8 @@ public class RecipeController {
      */
     @PostMapping(value = "/save", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<String> save(
-            @RequestPart(value = "data") RecipeDTO.Request request,
-            @RequestPart(value = "mainImage", required = false) List<MultipartFile> mainImage, // 메인 사진
+            @RequestPart(value = "data") RecipeRequestDTO.Request request,
+            @RequestPart(value = "mainImage", required = false) List<MultipartFile> mainImage,
             MultipartHttpServletRequest multipartRequest, // 단계별 사진을 추출하기 위한 요청 객체
             HttpSession session
     ) {
@@ -71,7 +71,7 @@ public class RecipeController {
      * @return 레시피 목록
      */
     @GetMapping("/list")
-    public ResponseEntity<List<RecipeDTO.Response>> findAll() {
+    public ResponseEntity<List<RecipeResponseDTO.Summary>> findAll() {
         return ResponseEntity.ok(recipeService.findAllRecipe());
     }
 
@@ -81,7 +81,7 @@ public class RecipeController {
      * @return 레시피 상세 정보
      */
     @GetMapping("/detail/{recipeId}")
-    public ResponseEntity<RecipeDetailDTO.Response> findDetail(@PathVariable String recipeId) {
+    public ResponseEntity<RecipeResponseDTO.Detail> findDetail(@PathVariable String recipeId) {
         return ResponseEntity.ok(recipeService.findRecipeDetail(recipeId));
     }
 }
