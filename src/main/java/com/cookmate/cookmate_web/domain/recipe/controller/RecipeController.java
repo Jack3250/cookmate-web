@@ -1,9 +1,10 @@
 package com.cookmate.cookmate_web.domain.recipe.controller;
 
+import com.cookmate.cookmate_web.domain.global.config.auth.LoginUser;
 import com.cookmate.cookmate_web.domain.recipe.dto.RecipeRequestDTO;
 import com.cookmate.cookmate_web.domain.recipe.dto.RecipeResponseDTO;
 import com.cookmate.cookmate_web.domain.recipe.service.RecipeService;
-import jakarta.servlet.http.HttpSession;
+import com.cookmate.cookmate_web.domain.users.dto.SessionUser;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -37,28 +38,20 @@ public class RecipeController {
 
     /**
      * 레시피 등록
+     * @param user 세션 사용자
      * @param request 등록 요청 데이터
      * @param mainImage 메인 사진
      * @param multipartRequest 단계별 사진을 추출하기 위한 요청 객체
-     * @param session 로그인 세션
      * @return 레시피 ID
      */
     @PostMapping(value = "/save", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<String> save(
+            @LoginUser SessionUser user,
             @RequestPart(value = "data") RecipeRequestDTO.Request request,
             @RequestPart(value = "mainImage", required = false) List<MultipartFile> mainImage,
-            MultipartHttpServletRequest multipartRequest, // 단계별 사진을 추출하기 위한 요청 객체
-            HttpSession session
+            MultipartHttpServletRequest multipartRequest // 단계별 사진을 추출하기 위한 요청 객체
     ) {
-        /*
-        TODO : 로그인 세션 적용 시 이용
-        SessionUser user = (SessionUser) session.getAttribute("USER_SESSION");
-        if (user == null) {
-            throw new CustomException(ErrorCode.UNAUTHORIZED_ACCESS);
-        }
         String loginId = user.getLoginId();
-         */
-        String loginId = "testuser";
 
         // 단계별 사진 추출
         Map<Integer, List<MultipartFile>> stepImagesMap = recipeService.extractStepImages(request, multipartRequest);
@@ -87,28 +80,20 @@ public class RecipeController {
 
     /**
      * 레시피 수정
+     * @param user 세션 사용자
      * @param request 수정 요청 데이터
      * @param mainImage 메인 사진
      * @param multipartRequest 단계별 사진을 추출하기 위한 요청 객체
-     * @param session 로그인 세션
      * @return 레시피 ID
      */
     @PutMapping(value = "/update", consumes = {MediaType.MULTIPART_FORM_DATA_VALUE})
     public ResponseEntity<Long> update(
+            @LoginUser SessionUser user,
             @RequestPart(value = "data") RecipeRequestDTO.Request request,
             @RequestPart(value = "mainImage", required = false) List<MultipartFile> mainImage,
-            MultipartHttpServletRequest multipartRequest,
-            HttpSession session
+            MultipartHttpServletRequest multipartRequest // 단계별 사진을 추출하기 위한 요청 객체
     ) {
-        /*
-        TODO : 로그인 세션 적용 시 이용
-        SessionUser user = (SessionUser) session.getAttribute("USER_SESSION");
-        if (user == null) {
-            throw new CustomException(ErrorCode.UNAUTHORIZED_ACCESS);
-        }
         String loginId = user.getLoginId();
-         */
-        String loginId = "testuser";
 
         // 단계별 사진 추출
         Map<Integer, List<MultipartFile>> stepImagesMap = recipeService.extractStepImages(request, multipartRequest);
@@ -118,19 +103,13 @@ public class RecipeController {
 
     /**
      * 레시피 삭제
+     * @param recipeId 레시피 ID
+     * @param user 세션 사용자
+     * @return 삭제 성공 여부
      */
     @DeleteMapping("/delete/{recipeId}")
-    public ResponseEntity<Void> delete(@PathVariable String recipeId, HttpSession session) {
-        /*
-        TODO : 로그인 세션 적용 시 이용
-        SessionUser user = (SessionUser) session.getAttribute("USER_SESSION");
-        if (user == null) {
-            throw new CustomException(ErrorCode.UNAUTHORIZED_ACCESS);
-        }
+    public ResponseEntity<Void> delete(@PathVariable String recipeId, @LoginUser SessionUser user) {
         String loginId = user.getLoginId();
-         */
-        String loginId = "testuser";
-
         recipeService.deleteRecipe(recipeId, loginId);
         return ResponseEntity.ok().build();
     }

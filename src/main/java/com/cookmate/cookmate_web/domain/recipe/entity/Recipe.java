@@ -1,5 +1,6 @@
 package com.cookmate.cookmate_web.domain.recipe.entity;
 
+import com.cookmate.cookmate_web.domain.users.entity.User;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -90,12 +91,9 @@ public class Recipe {
     @Column(name = "recipe_status", nullable = false, length = 20)
     private String recipeStatus;
 
-    // TODO : 회원 조인 필요
-//    @ManyToOne(fetch = FetchType.LAZY)
-//    @JoinColumn(name = "rgtr_key", referencedColumnName = "user_key")
-//    private User user;
-
-    private String rgtrKey;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "rgtr_key", referencedColumnName = "user_key")
+    private User user;
 
     // 재료 조인
     @OneToMany(mappedBy = "recipe", cascade = CascadeType.ALL, orphanRemoval = true)

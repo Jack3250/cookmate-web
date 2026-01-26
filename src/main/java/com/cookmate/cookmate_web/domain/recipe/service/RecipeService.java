@@ -10,6 +10,8 @@ import com.cookmate.cookmate_web.domain.recipe.entity.Ingredient;
 import com.cookmate.cookmate_web.domain.recipe.entity.Recipe;
 import com.cookmate.cookmate_web.domain.recipe.entity.RecipeStep;
 import com.cookmate.cookmate_web.domain.recipe.repository.RecipeRepository;
+import com.cookmate.cookmate_web.domain.users.entity.User;
+import com.cookmate.cookmate_web.domain.users.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -40,7 +42,7 @@ import java.util.Map;
 public class RecipeService {
 
     private final RecipeRepository recipeRepository;
-//    private final UserRepository userRepository;
+    private final UserRepository userRepository;
     private final FileService fileService;
 
     /**
@@ -56,12 +58,10 @@ public class RecipeService {
                              RecipeRequestDTO.Request request,
                              List<MultipartFile> mainImage,
                              Map<Integer, List<MultipartFile>> stepImagesMap) {
-        /*
-        TODO : 작성자 조회 필요
+
         User user = userRepository.findByLoginId(loginId)
                 .orElseThrow(() -> new CustomException(ErrorCode.USER_NOT_FOUND));
-         */
-        String rgtrKey = "testuserkey";
+        String rgtrKey = user.getUserKey();
 
         // 파일 저장
         String mainFileGrpId = null;
@@ -79,8 +79,7 @@ public class RecipeService {
                 .recipeDifficultCd(request.getRecipeDifficultCd())
                 .categoryCd(request.getCategoryCd())
                 .fileGrpId(mainFileGrpId)
-//                .user(user)
-                .rgtrKey(rgtrKey)
+                .user(user)
                 .recipeStatus(request.getRecipeStatus())
                 .viewCnt(0)
                 .delYn("N")
@@ -181,7 +180,7 @@ public class RecipeService {
                 .cookingTime(recipe.getCookingTime())
                 .recipeDifficultCd(recipe.getRecipeDifficultCd())
                 .categoryCd(recipe.getCategoryCd())
-                .writerName(recipe.getRgtrKey()) // TODO : 차후 USER 객체 가져오면 닉네임으로 변경
+                .writerName(recipe.getUser().getNickname())
                 .regDt(recipe.getRegDt())
                 .mainImageUrls(mainImageUrls)
                 .ingredients(ingredients)
@@ -207,21 +206,14 @@ public class RecipeService {
         Recipe recipe = recipeRepository.findByRecipeIdAndDelYn(request.getRecipeId())
                 .orElseThrow(() -> new CustomException(ErrorCode.RECIPE_NOT_FOUND));
 
-        /*
-        TODO : 차후 유저 기능 구현 후 이용
         // 권한 체크
         if (!recipe.getUser().getLoginId().equals(loginId)) {
-            throw new CustomException(ErrorCode.HANDLE_ACCESS_DENIED); // 권한 없음 예외 필요
+            throw new CustomException(ErrorCode.HANDLE_ACCESS_DENIED);
         }
-         */
 
-        /*
-        TODO : 차후 유저 기능 구현 후 이용
         // 수정 요청자 정보 조회
         User user = userRepository.findByLoginId(loginId).orElseThrow();
         String mdfrKey = user.getUserKey();
-         */
-        String mdfrKey = "testuserkey";
 
         // 메인 이미지 처리
         String mainFileGrpId = request.getFileGrpId();
@@ -287,13 +279,10 @@ public class RecipeService {
         Recipe recipe = recipeRepository.findByRecipeIdAndDelYn(recipeId)
                 .orElseThrow(() -> new CustomException(ErrorCode.RECIPE_NOT_FOUND));
 
-        /*
-        TODO : 차후 유저 기능 구현 후 이용
         // 권한 체크
         if (!recipe.getUser().getLoginId().equals(loginId)) {
             throw new CustomException(ErrorCode.HANDLE_ACCESS_DENIED);
         }
-         */
 
         recipe.deleteRecipe();
     }

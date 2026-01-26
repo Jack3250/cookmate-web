@@ -2,6 +2,7 @@ package com.cookmate.cookmate_web.domain.global.config.security;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.HttpMethod;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
@@ -40,9 +41,9 @@ public class SecurityConfig {
                 .requestMatchers(
                         "/common/**"
                         , "/users/*"
-                        , "/files/**"
-                        , "/recipe/**"
+                        , "/files/view/**"
                     ).permitAll() // 허용 페이지
+                .requestMatchers(HttpMethod.GET, "/recipe/**").permitAll()
                 .anyRequest().authenticated() // 그 외는 인증 필요
             );
 
