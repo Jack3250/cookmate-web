@@ -123,4 +123,36 @@ public class Recipe {
         this.recipeSteps.add(step);
         step.setRecipe(this);
     }
+
+    /*
+    ========================================================
+    수정 헬퍼 메서드
+    ========================================================
+     */
+    // 레시피 기본 정보 수정 메서드
+    public void updateRecipe(String recipeTtl, String dishNm, String recipeCn, Integer cookingTime,
+                             String recipeDifficultCd, String categoryCd, String recipeStatus, String fileGrpId) {
+        this.recipeTtl = recipeTtl;
+        this.dishNm = dishNm;
+        this.recipeCn = recipeCn;
+        this.cookingTime = cookingTime;
+        this.recipeDifficultCd = recipeDifficultCd;
+        this.categoryCd = categoryCd;
+        this.recipeStatus = recipeStatus;
+
+        if (fileGrpId != null) {
+            this.fileGrpId = fileGrpId;
+        }
+    }
+
+    // 삭제 처리
+    public void deleteRecipe() {
+        this.delYn = "Y";
+    }
+
+    // 재료/단계 초기화
+    public void clearExtras() {
+        this.ingredients.clear();
+        this.recipeSteps.clear();
+    }
 }

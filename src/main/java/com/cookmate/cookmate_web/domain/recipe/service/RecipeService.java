@@ -189,6 +189,115 @@ public class RecipeService {
                 .build();
     }
 
+    /**
+     * 레시피 수정
+     * @param loginId 로그인 ID
+     * @param request 수정 요청 데이터
+     * @param mainImages 메인 사진
+     * @param stepImagesMap 단계별 사진 목록
+     * @return 레시피 ID
+     */
+    @Transactional
+    public Long updateRecipe(String loginId,
+                             RecipeRequestDTO.Request request,
+                             List<MultipartFile> mainImages,
+                             Map<Integer, List<MultipartFile>> stepImagesMap) {
+
+        // 레시피 조회
+        Recipe recipe = recipeRepository.findByRecipeIdAndDelYn(request.getRecipeId())
+                .orElseThrow(() -> new CustomException(ErrorCode.RECIPE_NOT_FOUND));
+
+        /*
+        TODO : 차후 유저 기능 구현 후 이용
+        // 권한 체크
+        if (!recipe.getUser().getLoginId().equals(loginId)) {
+            throw new CustomException(ErrorCode.HANDLE_ACCESS_DENIED); // 권한 없음 예외 필요
+        }
+         */
+
+        /*
+        TODO : 차후 유저 기능 구현 후 이용
+        // 수정 요청자 정보 조회
+        User user = userRepository.findByLoginId(loginId).orElseThrow();
+        String mdfrKey = user.getUserKey();
+         */
+        String mdfrKey = "testuserkey";
+
+        // 메인 이미지 처리
+        String mainFileGrpId = request.getFileGrpId();
+
+        if (mainFileGrpId != null) { // 기존 그룹이 존재하는 경우
+            fileService.updateFiles(mainFileGrpId, mainImages, request.getDeleteFileIds(), mdfrKey);
+        } else if (mainImages != null && !mainImages.isEmpty()) { // 기존 그룹이 없고, 새 파일만 있는 경우
+            mainFileGrpId = fileService.saveFile(mainImages, null, mdfrKey);
+        }
+
+        // 기본 정보 업데이트
+        recipe.updateRecipe(
+                request.getRecipeTtl(),
+                request.getDishNm(),
+                request.getRecipeCn(),
+                request.getCookingTime(),
+                request.getRecipeDifficultCd(),
+                request.getCategoryCd(),
+                request.getRecipeStatus(),
+                mainFileGrpId
+        );
+
+        // 전체 삭제
+        recipe.clearExtras();
+
+        // 재료 추가
+        addIngredients(request, recipe);
+
+        // 단계 다시 등록
+        if (request.getSteps() != null) {
+            List<RecipeRequestDTO.Step> steps = request.getSteps();
+
+            for (int i = 0; i < steps.size(); i++) {
+                RecipeRequestDTO.Step step = steps.get(i);
+
+                String stepFileGrpId = step.getFileGrpId(); // 기존 이미지 ID
+                List<MultipartFile> stepImages = stepImagesMap.get(i);
+
+                if (stepFileGrpId != null) { // 기존 그룹이 존재하는 경우
+                    fileService.updateFiles(stepFileGrpId, stepImages, step.getDeleteFileIds(), mdfrKey);
+                } else if (stepImages != null && !stepImages.isEmpty()) { // 기존 그룹이 없고, 새 파일만 있는 경우
+                    stepFileGrpId = fileService.saveFile(stepImages, null, mdfrKey);
+                }
+
+                recipe.addStep(RecipeStep.builder()
+                        .stepNo(step.getStepNo())
+                        .stepCn(step.getStepCn())
+                        .fileGrpId(stepFileGrpId)
+                        .build());
+            }
+        }
+
+        return recipe.getRecipeSeq();
+    }
+
+    /**
+     * 레시피 삭제
+     * @param recipeId 레시피 ID
+     * @param loginId 로그인 ID
+     */
+    @Transactional
+    public void deleteRecipe(String recipeId, String loginId) {
+        Recipe recipe = recipeRepository.findByRecipeIdAndDelYn(recipeId)
+                .orElseThrow(() -> new CustomException(ErrorCode.RECIPE_NOT_FOUND));
+
+        /*
+        TODO : 차후 유저 기능 구현 후 이용
+        // 권한 체크
+        if (!recipe.getUser().getLoginId().equals(loginId)) {
+            throw new CustomException(ErrorCode.HANDLE_ACCESS_DENIED);
+        }
+         */
+
+        recipe.deleteRecipe();
+    }
+
     /*
     ========================================================
     헬퍼 메소드
